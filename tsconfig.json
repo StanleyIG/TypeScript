@@ -33,6 +33,8 @@
     // "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
+
+    "strictPropertyInitialization": false,
     "strict": true,
     // "noEmitOnError": true,
     // "noImplicitAny": true,
