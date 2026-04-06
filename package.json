@@ -1,0 +1,23 @@
+{
+  "name": "typescript",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/StanleyIG/TypeScript#readme",
+  "bugs": {
+    "url": "https://github.com/StanleyIG/TypeScript/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StanleyIG/TypeScript.git"
+  },
+  "license": "ISC",
+  "author": "StanleyIG",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.2.2"
+  }
+}
