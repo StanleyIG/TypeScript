@@ -1,63 +1,41 @@
-import 'reflect-metadata';
-
-const POSITIVE_METADATA_KEY = Symbol('POSITIVE_METADATA_KEY');
-
-interface IUserService {
-	getUsersInDatabase(): number;
+function Uni(name: string): any {
+  console.log(`Инициализация: ${name}`);
+  return function () {
+    console.log(`Вызов: ${name}`);
+  };
 }
 
-class UserService implements IUserService {
-	private _users: number;
+// На заметку:
+// TypeScript делает примерно следующее:
 
-	getUsersInDatabase(): number {
-		return this._users;
-	}
+// const originalDescriptor = Object.getOwnPropertyDescriptor(MyClass.prototype, 'method');
+// const decoratorResult = Uni("Метод")()(MyClass.prototype, 'method', originalDescriptor);
 
-	@Validate()
-	setUsersInDatabase(@Positive() num: number): void {
-		this._users = num;
-	}
+// // Если decoratorResult === undefined, используем originalDescriptor
+// const finalDescriptor = decoratorResult || originalDescriptor;
+// Object.defineProperty(MyClass.prototype, 'method', finalDescriptor);
+// Тут поведение отличается от Python
+
+@Uni("Класс1")
+@Uni("Класс2")
+class MyClass {
+  @Uni("Метод")
+  method(@Uni("Параметр метода") _: any) {}
+
+  constructor(@Uni("Параметр конструктора") _: any) {}
+
+  @Uni("Свойство 3")
+  props3?: any;
+
+  @Uni("Свойство 1")
+  props?: any;
+
+  @Uni("Свойство static")
+  static prop2?: any;
+
+  @Uni("Метод static")
+  static method2(@Uni("Параметр метода static") _: any) {}
 }
 
-function Positive() {
-	return (
-		target: Object,
-		propertyKey: string | symbol,
-		parameterIndex: number
-	) => {
-		// console.log(Reflect.getOwnMetadata('design:type', target, propertyKey));
-		// console.log(Reflect.getOwnMetadata('design:paramtypes', target, propertyKey));
-		// console.log(Reflect.getOwnMetadata('design:returntype', target, propertyKey));
-		let existParams: number[] = Reflect.getOwnMetadata(POSITIVE_METADATA_KEY, target, propertyKey) || [];
-		console.log(existParams)
-		existParams.push(parameterIndex);
-		console.log(existParams)
-		Reflect.defineMetadata(POSITIVE_METADATA_KEY, existParams, target, propertyKey);
-		console.log(existParams)
-	}
-}
-
-function Validate() {
-	return (
-		target: Object,
-		propertyKey: string | symbol,
-		descriptor: TypedPropertyDescriptor<(...args: any[]) => any>
-	) => {
-		let method = descriptor.value;
-		descriptor.value = function (...args: any) {
-			let positiveParams: number[] = Reflect.getOwnMetadata(POSITIVE_METADATA_KEY, target, propertyKey);
-			if (positiveParams) {
-				for (let index of positiveParams) {
-					if (args[index] < 0) {
-						throw new Error('Число должно быть больше нуля');
-					}
-				}
-			}
-			return method?.apply(this, args);
-		}
-	}
-}
-
-const userService = new UserService();
-console.log(userService.setUsersInDatabase(10));
-console.log(userService.setUsersInDatabase(-1));
+const obj = new MyClass(1);
+obj.method(2);
