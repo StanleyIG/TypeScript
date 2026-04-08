@@ -1,3 +1,7 @@
+import 'reflect-metadata';
+
+const POSITIVE_METADATA_KEY = Symbol('POSITIVE_METADATA_KEY');
+
 interface IUserService {
 	getUsersInDatabase(): number;
 }
@@ -5,34 +9,55 @@ interface IUserService {
 class UserService implements IUserService {
 	private _users: number;
 
-	@Log()
-	set users(num: number) {
-		this._users = num;
-	}
-
-	get users() {
+	getUsersInDatabase(): number {
 		return this._users;
 	}
 
-	getUsersInDatabase(): number {
-		throw new Error('Ошибка');
+	@Validate()
+	setUsersInDatabase(@Positive() num: number): void {
+		this._users = num;
 	}
 }
 
-function Log() {
+function Positive() {
 	return (
 		target: Object,
-		_: string | symbol,
-		descriptor: PropertyDescriptor
+		propertyKey: string | symbol,
+		parameterIndex: number
 	) => {
-		const set = descriptor.set;
-		descriptor.set = (...args: any) => {
-			console.log(args);
-			set?.apply(target, args);
+		// console.log(Reflect.getOwnMetadata('design:type', target, propertyKey));
+		// console.log(Reflect.getOwnMetadata('design:paramtypes', target, propertyKey));
+		// console.log(Reflect.getOwnMetadata('design:returntype', target, propertyKey));
+		let existParams: number[] = Reflect.getOwnMetadata(POSITIVE_METADATA_KEY, target, propertyKey) || [];
+		console.log(existParams)
+		existParams.push(parameterIndex);
+		console.log(existParams)
+		Reflect.defineMetadata(POSITIVE_METADATA_KEY, existParams, target, propertyKey);
+		console.log(existParams)
+	}
+}
+
+function Validate() {
+	return (
+		target: Object,
+		propertyKey: string | symbol,
+		descriptor: TypedPropertyDescriptor<(...args: any[]) => any>
+	) => {
+		let method = descriptor.value;
+		descriptor.value = function (...args: any) {
+			let positiveParams: number[] = Reflect.getOwnMetadata(POSITIVE_METADATA_KEY, target, propertyKey);
+			if (positiveParams) {
+				for (let index of positiveParams) {
+					if (args[index] < 0) {
+						throw new Error('Число должно быть больше нуля');
+					}
+				}
+			}
+			return method?.apply(this, args);
 		}
 	}
 }
 
 const userService = new UserService();
-userService.users = 1;
-console.log(userService.users);
+console.log(userService.setUsersInDatabase(10));
+console.log(userService.setUsersInDatabase(-1));
