@@ -51,5 +51,5 @@ class Flight<T> {
 	}
 }
 
-const obj = new Flight(["RU", "GB"])
-obj.fly('asdfsad')
+const obj = new Flight(["RU", "GB"] as const) 
+obj.fly('RU')
